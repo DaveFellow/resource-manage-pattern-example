@@ -1,9 +1,10 @@
 import { Observable } from "rxjs";
 import { ResourceId } from "../types/Resources";
 import { HttpClient } from "@angular/common/http";
+import { ResourceStatusManager } from "../resources/ResourceStatus";
 
 export interface ResourceManager<T> {
-    http: HttpClient;
+    readonly status: ResourceStatusManager;
 
     list(): Observable<Object>;
     

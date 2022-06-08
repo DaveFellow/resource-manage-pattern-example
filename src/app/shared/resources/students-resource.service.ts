@@ -19,7 +19,7 @@ export class StudentsResourceService extends BaseResource<Student> {
   }
 
   inscribe(studentId: ResourceId, classroomId: ResourceId): Observable<APIConnectionResponseBody> {
-    const url: string = `${this.getName()}/inscribe`;
+    const url: string = this.buildUrl('inscribe');
 
     const body = { studentId, classroomId };
 

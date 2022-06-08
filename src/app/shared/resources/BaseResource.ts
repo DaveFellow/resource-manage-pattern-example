@@ -14,7 +14,7 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     constructor(public http: HttpClient) {}
 
     list(): Observable<T[]> {
-        const url: string = `${this.name}/list`;
+        const url: string = this.buildUrl('list');
         const request: Observable<Object> = this.http.get(url);
 
         return this.pipeRequest(request, 'list').pipe(
@@ -24,7 +24,7 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     
     
     details(id: ResourceId): Observable<T> {
-        const url: string = `${this.name}/details/${id}`;
+        const url: string = this.buildUrl(`details/${id}`);
         const request: Observable<Object> = this.http.get(url);
 
         return this.pipeRequest(request, 'details').pipe(
@@ -34,7 +34,7 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     
     
     create(body: Partial<T>): Observable<APIConnectionResponseBody> {
-        const url: string = `${this.name}/create`;
+        const url: string = this.buildUrl('create');
         const request: Observable<Object> = this.http.post(url, body);
 
         return this.pipeRequest(request, 'create').pipe(
@@ -44,7 +44,7 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     
     
     update(id: ResourceId, body: Partial<T>): Observable<APIConnectionResponseBody> {
-        const url: string = `${this.name}/update/${id}`;
+        const url: string = this.buildUrl(`update/${id}`);
         const request: Observable<Object> = this.http.put(url, body);
 
         return this.pipeRequest(request, 'update').pipe(
@@ -54,7 +54,7 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     
     
     delete(id: ResourceId): Observable<APIConnectionResponseBody> {
-        const url: string = `${this.name}/delete/${id}`;
+        const url: string = this.buildUrl(`delete/${id}`);
         const request: Observable<Object> = this.http.delete(url);
 
         return this.pipeRequest(request, 'delete').pipe(
@@ -86,5 +86,9 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
 
     protected setName(name: string): void {
         this.name = name;
+    }
+
+    protected buildUrl(route: string): string {
+        return `${this.name}/${route}`;
     }
 }
