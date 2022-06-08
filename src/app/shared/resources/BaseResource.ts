@@ -1,10 +1,8 @@
-import { HttpResponse } from "@angular/common/http";
+import { HttpClient, HttpResponse } from "@angular/common/http";
 import { catchError, map, Observable } from "rxjs";
-import { APIConnectionHandler } from "../interfaces/APIConnectionHandler";
 import { APIConnectionResponseBody } from "../interfaces/APIConnectionResponse";
 import { RequestProcessor } from "../interfaces/RequestProcessor";
 import { ResourceManager } from "../interfaces/ResourceManager";
-import { RequestResponse } from "../types/Requests";
 import { ResourceId } from "../types/Resources";
 import { ResourceStatusManager } from "./ResourceStatus";
 
@@ -13,11 +11,11 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
 
     public readonly status: ResourceStatusManager = new ResourceStatusManager;
 
-    constructor(public connection: APIConnectionHandler) {}
+    constructor(public http: HttpClient) {}
 
     list(): Observable<T[]> {
         const url: string = `${this.name}/list`;
-        const request: Observable<RequestResponse<T>> = this.connection.get<T>(url);
+        const request: Observable<Object> = this.http.get(url);
 
         return this.pipeRequest(request, 'list').pipe(
             map(response => (<HttpResponse<T[]>>response).body as T[])
@@ -27,7 +25,7 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     
     details(id: ResourceId): Observable<T> {
         const url: string = `${this.name}/details/${id}`;
-        const request: Observable<RequestResponse<T>> = this.connection.get<T>(url);
+        const request: Observable<Object> = this.http.get(url);
 
         return this.pipeRequest(request, 'details').pipe(
             map(response => (<HttpResponse<T>>response).body as T)
@@ -37,7 +35,7 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     
     create(body: Partial<T>): Observable<APIConnectionResponseBody> {
         const url: string = `${this.name}/create`;
-        const request: Observable<RequestResponse<T>> = this.connection.post<T>(url, body as Object);
+        const request: Observable<Object> = this.http.post(url, body);
 
         return this.pipeRequest(request, 'create').pipe(
             map(response => (<HttpResponse<APIConnectionResponseBody>>response).body as APIConnectionResponseBody)
@@ -47,7 +45,7 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     
     update(id: ResourceId, body: Partial<T>): Observable<APIConnectionResponseBody> {
         const url: string = `${this.name}/update/${id}`;
-        const request: Observable<RequestResponse<T>> = this.connection.put<T>(url, body as Object);
+        const request: Observable<Object> = this.http.put(url, body);
 
         return this.pipeRequest(request, 'update').pipe(
             map(response => (<HttpResponse<APIConnectionResponseBody>>response).body as APIConnectionResponseBody)
@@ -57,7 +55,7 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     
     delete(id: ResourceId): Observable<APIConnectionResponseBody> {
         const url: string = `${this.name}/delete/${id}`;
-        const request: Observable<RequestResponse<T>> = this.connection.delete<T>(url);
+        const request: Observable<Object> = this.http.delete(url);
 
         return this.pipeRequest(request, 'delete').pipe(
             map(response => (<HttpResponse<APIConnectionResponseBody>>response).body as APIConnectionResponseBody)
@@ -65,11 +63,11 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     }
 
 
-    pipeRequest<T>(request: Observable<RequestResponse<T>>, actionName: string = ''): Observable<unknown> {
+    pipeRequest<T>(request: Observable<Object>, actionName: string = ''): Observable<unknown> {
         this.status.setLoading(actionName);
 
         return request.pipe(
-            map((response: RequestResponse<T>) => {
+            map(response => {
                 const httpResponse = response as HttpResponse<T>;
                 this.status.setSuccess(actionName);
                 return httpResponse.body;
