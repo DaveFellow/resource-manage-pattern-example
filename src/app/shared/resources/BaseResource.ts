@@ -13,8 +13,16 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
 
     constructor(public http: HttpClient) {}
 
-    list(): Observable<T[]> {
-        const url: string = this.buildUrl('list');
+    protected buildUrl = (route: string): string => `${this.name}/${route}`;
+
+    public getName = (): string => this.name; 
+
+    protected setName(name: string): void {
+        this.name = name;
+    }
+
+    list(customRoute?: string): Observable<T[]> {
+        const url: string = this.buildUrl(customRoute || 'list');
         const request: Observable<Object> = this.http.get(url);
 
         return this.pipeRequest(request, 'list').pipe(
@@ -23,8 +31,8 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     }
     
     
-    details(id: ResourceId): Observable<T> {
-        const url: string = this.buildUrl(`details/${id}`);
+    details(id: ResourceId, customRoute?: string): Observable<T> {
+        const url: string = this.buildUrl(`${customRoute}/${id}` || `details/${id}`);
         const request: Observable<Object> = this.http.get(url);
 
         return this.pipeRequest(request, 'details').pipe(
@@ -33,7 +41,7 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     }
     
     
-    create(body: Partial<T>): Observable<APIConnectionResponseBody> {
+    create(body: Partial<T>, customRoute?: string): Observable<APIConnectionResponseBody> {
         const url: string = this.buildUrl('create');
         const request: Observable<Object> = this.http.post(url, body);
 
@@ -43,8 +51,8 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     }
     
     
-    update(id: ResourceId, body: Partial<T>): Observable<APIConnectionResponseBody> {
-        const url: string = this.buildUrl(`update/${id}`);
+    update(id: ResourceId, body: Partial<T>, customRoute?: string): Observable<APIConnectionResponseBody> {
+        const url: string = this.buildUrl(`${customRoute}/${id}` || `update/${id}`);
         const request: Observable<Object> = this.http.put(url, body);
 
         return this.pipeRequest(request, 'update').pipe(
@@ -53,8 +61,8 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
     }
     
     
-    delete(id: ResourceId): Observable<APIConnectionResponseBody> {
-        const url: string = this.buildUrl(`delete/${id}`);
+    delete(id: ResourceId, customRoute?: string): Observable<APIConnectionResponseBody> {
+        const url: string = this.buildUrl(`${customRoute}/${id}` || `delete/${id}`);
         const request: Observable<Object> = this.http.delete(url);
 
         return this.pipeRequest(request, 'delete').pipe(
@@ -78,17 +86,5 @@ export abstract class BaseResource<T> implements ResourceManager<T>, RequestProc
                 throw err;
             })
         );
-    }
-
-    public getName(): string {
-        return this.name;
-    }
-
-    protected setName(name: string): void {
-        this.name = name;
-    }
-
-    protected buildUrl(route: string): string {
-        return `${this.name}/${route}`;
     }
 }
